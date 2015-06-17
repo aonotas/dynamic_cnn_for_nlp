@@ -50,12 +50,13 @@ def main():
     vocab_size = len(vocab)
 
 
-    feat_map_n_1 = 1
+    feat_map_n_1 = 2
     feat_map_n_final = 1
 
     height = 1
-    width  = 5
-    k_top  = 3
+    width1 = 10
+    width2 = 7
+    k_top  = 4
     n_class = 5
     alpha   = 0.01
     n_epoch = 500
@@ -85,7 +86,7 @@ def main():
 
     l1 = DynamicConvFoldingPoolLayer(rng, 
                               input = embeddings.output, 
-                              filter_shape = (feat_map_n_1, 1, height, width),  # two feature map, height: 1, width: 2, 
+                              filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
                               index_of_convolitonal_layer=1,
@@ -95,7 +96,7 @@ def main():
 
     l2 = DynamicConvFoldingPoolLayer(rng, 
                               input = l1.output, 
-                              filter_shape = (feat_map_n_final, feat_map_n_1, height, width),
+                              filter_shape = (feat_map_n_final, feat_map_n_1, height, width2),
                               # two feature map, height: 1, width: 2, 
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
@@ -258,7 +259,7 @@ def main():
             # print "*predict :",predict(train_x, len(train_x)), train_y 
         # Accuracy = float(Accuracy_count) / len(test_set)
         # print "  accuracy : %f" % Accuracy, 
-        print "  accuracy : %f" % accuracy_score(test_set_y, y_pred)
+        return accuracy_score(test_set_y, y_pred)
         # print classification_report(test_set_y, y_pred)
 
     for epoch in xrange(n_epoch):
@@ -273,8 +274,9 @@ def main():
                 print "i : (%d/%d)" % (i, len(train_set)) , " (cost : %f )" % train_cost
         
 
-        print '  train_set ', test(train_set)
-        print '  dev_set   ', test(dev_set)
+        print '  train_set : %f' % test(train_set)
+        print '  dev_set   : %f' % test(dev_set)
+        print '  test_set  : %f' % test(test_set)
 
         
 
