@@ -9,6 +9,7 @@ import math
 import numpy as np
 import theano
 import theano.tensor as T
+from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 theano.config.exception_verbosity='high'
 
 from dcnn_train import WordEmbeddingLayer,DynamicConvFoldingPoolLayer #, ConvFoldingPoolLayer
@@ -17,7 +18,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 
 rng = np.random.RandomState(1234)
-
+srng = RandomStreams()
 
 def main():
 
@@ -60,6 +61,8 @@ def main():
     n_class = 5
     alpha   = 0.01
     n_epoch = 500
+    dropout_rate1 = 0.2
+    dropout_rate2 = 0.5
     number_of_convolutinal_layer = 2
 
 
@@ -74,7 +77,12 @@ def main():
                             vocab_size, EMB_DIM, None)
 
 
-
+    def dropout(X, p=0.5):
+        if p > 0:
+            retain_prob = 1 - p
+            X *= srng.binomial(X.shape, p=retain_prob, dtype=theano.config.floatX)
+            X /= retain_prob
+        return X
     # number_of_convolutinal_layer = theano.shared(number_of_convolutinal_layer)
     # dynamic_func = theano.function(inputs=[length_x], outputs=number_of_convolutinal_layer * length_x)
 
@@ -95,7 +103,7 @@ def main():
 
 
     l2 = DynamicConvFoldingPoolLayer(rng, 
-                              input = l1.output, 
+                              input = dropout(l1.output, p=dropout_rate1), 
                               filter_shape = (feat_map_n_final, feat_map_n_1, height, width2),
                               # two feature map, height: 1, width: 2, 
                               k_top = k_top,
@@ -103,7 +111,17 @@ def main():
                               index_of_convolitonal_layer=2,
                               length_x=length_x
     )
-
+    l2_no_dropout = DynamicConvFoldingPoolLayer(rng, 
+                              input = l1.output,
+                              W=l2.W,
+                              b=l2.b,
+                              filter_shape = (feat_map_n_final, feat_map_n_1, height, width2),
+                              # two feature map, height: 1, width: 2, 
+                              k_top = k_top,
+                              number_of_convolutinal_layer=number_of_convolutinal_layer,
+                              index_of_convolitonal_layer=2,
+                              length_x=length_x
+    )
 
 
     # l2_output = theano.function(
@@ -156,11 +174,22 @@ def main():
 
     l_final = LogisticRegression(
         rng, 
-        input = l2.output.flatten(2),
+        input = dropout(l2.output.flatten(2), p=dropout_rate2),
         n_in = feat_map_n_final * k_top * EMB_DIM,
         # n_in = feat_map_n * k * EMB_DIM / 2, # we fold once, so divide by 2
         n_out = n_class # five sentiment level
     )
+
+    l_final_no_dropout = LogisticRegression(
+        rng, 
+        input = l2_no_dropout.output.flatten(2),
+        W = l_final.W,
+        b = l_final.b,
+        n_in = feat_map_n_final * k_top * EMB_DIM,
+        # n_in = feat_map_n * k * EMB_DIM / 2, # we fold once, so divide by 2
+        n_out = n_class # five sentiment level
+    )
+
 
     print "n_in : ", feat_map_n_final * k_top * EMB_DIM
     # print "n_in = %d" %(2 * 2 * math.ceil(EMB_DIM / 2.))
@@ -228,7 +257,7 @@ def main():
     # predict = theano.function(inputs=[X], outputs=y_x, allow_input_downcast=True)
     predict = theano.function(
         inputs = [x, length_x],
-        outputs = T.argmax(l_final.p_y_given_x, axis=1),
+        outputs = T.argmax(l_final_no_dropout.p_y_given_x, axis=1),
         allow_input_downcast=True,
         # mode = "DebugMode"
     )
