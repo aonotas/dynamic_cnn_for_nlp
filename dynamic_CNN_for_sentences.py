@@ -272,9 +272,9 @@ def main():
             if i % 1000 == 0:
                 print "i : (%d/%d)" % (i, len(train_set)) , " (cost : %f )" % train_cost
         
-        
-        print '  train_set accuracy : ', test(train_set)
-        print '  dev_set   accuracy : ', test(dev_set)
+
+        print '  train_set ', test(train_set)
+        print '  dev_set   ', test(dev_set)
 
         
 
