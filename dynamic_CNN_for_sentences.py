@@ -323,7 +323,7 @@ def main():
     def b(x_data):
         return np.array(x_data, dtype=np.int32)
 
-
+    '''
     def test(test_set):
         # print "############# TEST ##############"
         y_pred = []
@@ -362,35 +362,34 @@ def main():
         print '  dev_set   : %f' % test(dev_set)
         print '  test_set  : %f' % test(test_set)
 
-        
+        '''
 
 
 
 
+    print "x_average :",sum([len(x_y_set[1]) for i,x_y_set in enumerate(train_set)]) / float(len(train_set))
 
-    '''
+
+
+
     X_data = []
     Y_data = []
-    for _ in xrange(2000):
-        length = np.random.randint(5, 50)
-        X_data.append(np.random.randint(0,vocab_size, length))
+    for _ in xrange(8544):
+        l = np.random.randint(5, 50)
+        X_data.append(np.random.randint(0,vocab_size, l))
         Y_data.append(np.random.randint(n_class))
 
     X_test = []
     Y_test = []
-    for _ in xrange(50):
-        length = np.random.randint(5, 50)
-        X_test.append(np.random.randint(0,vocab_size, length))
+    for _ in xrange(2210):
+        l = np.random.randint(5, 50)
+        X_test.append(np.random.randint(0,vocab_size, l))
         Y_test.append(np.random.randint(n_class))
 
 
-    def b(x_data):
-        return np.array(x_data, dtype=np.int32)
 
-
-
-    def test():
-        print "############# TEST ##############"
+    def test(X_test, Y_test):
+        # print "############# TEST ##############"
         y_pred = []
         # for train_x, train_y in zip(X_data, Y_data):
         for train_x, train_y in zip(X_test, Y_test):
@@ -412,15 +411,16 @@ def main():
             train_x = b([train_x])
             train_y = b([train_y])
             # print "*train :", train_x, train_y
-            train_cost = train(train_x, len(train_x) , train_y)
-            if i % 100 == 0:
-                print "*cost :",train_cost
+            train_cost = train(train_x, len(train_x), train_y)
+            if i % 1000 == 0:
+                print "i: (%d/%d)" % (i, len(X_data)), "*cost :", train_cost
 
-        if epoch % 5 == 0:
-            test()
+        if epoch % 2 == 0:
+            test(X_data, Y_data)
+            test(X_test, Y_test)
 
     test()
-    '''
+
 
 if __name__ == '__main__':
     main()
