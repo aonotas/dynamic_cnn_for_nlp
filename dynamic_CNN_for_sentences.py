@@ -313,7 +313,7 @@ def main():
             train_y = b([train_y])
 
             train_cost = train(train_x, len(train_x) , train_y)
-            if i % 1000 == 0:
+            if i % 1000 == 0 or i == len(train_set)-1:
                 print "i : (%d/%d)" % (i, len(train_set)) , " (cost : %f )" % train_cost
         
 
