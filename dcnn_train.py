@@ -18,6 +18,10 @@ from util import (load_data, dump_params)
 
 from logreg import LogisticRegression
 
+def relu(X):
+    return T.maximum(X, 0.)
+
+
 class DynamicConvFoldingPoolLayer(object):
     """
     Convolution, folding and k-max pooling layer
@@ -191,6 +195,9 @@ class DynamicConvFoldingPoolLayer(object):
             return T.tanh(pool_out)
         elif self.activation == "sigmoid":
             return T.nnet.sigmoid(pool_out)
+        elif self.activation == "relu":
+            return relu(pool_out)
+
         else:
             return T.switch(pool_out > 0, pool_out, 0)
 
