@@ -7,7 +7,7 @@ Usage:
     {f} -h | --help
 
 Options:
-    --n_epoch <n_epoch>      Number of epoch
+    --n_epoch <n_epoch>      Number of epoch 
     --alpha <alpha>          Learning rate
     -h --help                Show this screen and exit.
 """.format(f=__file__)
