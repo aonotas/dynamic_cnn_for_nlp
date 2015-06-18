@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+__doc__ = """{f}
+Usage:
+    {f} --alpha=<alpha> --n_epoch=<n_epoch>
+    {f} -h | --help
+
+Options:
+    --n_epoch <n_epoch>      Number of epoch
+    --alpha <alpha>          Learning rate
+    -h --help                Show this screen and exit.
+""".format(f=__file__)
 
 import sys
 import math
@@ -16,6 +24,9 @@ from dcnn_train import WordEmbeddingLayer,DynamicConvFoldingPoolLayer #, ConvFol
 from logreg import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
+
+from docopt import docopt
+
 
 rng = np.random.RandomState(1234)
 srng = RandomStreams()
@@ -47,6 +58,9 @@ def main():
 
 
 
+    args = docopt(__doc__)
+    print args
+
     EMB_DIM = 50
     vocab_size = len(vocab)
 
@@ -59,8 +73,8 @@ def main():
     width2 = 7
     k_top  = 4
     n_class = 5
-    alpha   = 0.1
-    n_epoch = 200
+    alpha   = float(args.get("alpha",0.001))
+    n_epoch = int(args.get("n_epoch",200))
     dropout_rate0 = 0.2
     dropout_rate1 = 0.4
     dropout_rate2 = 0.5
@@ -313,7 +327,7 @@ def main():
             train_y = b([train_y])
 
             train_cost = train(train_x, len(train_x) , train_y)
-            if i % 1000 == 0:
+            if i % 1000 == 0 or i == len(train_set)-1:
                 print "i : (%d/%d)" % (i, len(train_set)) , " (cost : %f )" % train_cost
         
 
