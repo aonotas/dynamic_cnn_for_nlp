@@ -4,13 +4,23 @@
 __doc__ = """{f}
 Usage:
     {f} --alpha=<alpha> --n_epoch=<n_epoch>
-    {f} -h | --help
 
 Options:
-    --n_epoch <n_epoch>      Number of epoch 
-    --alpha <alpha>          Learning rate
+    --n_epoch <n_epoch>      Number of epoch [default: 200].
+    --alpha <alpha>          Learning rate [default: 0.001]
     -h --help                Show this screen and exit.
 """.format(f=__file__)
+
+from docopt import docopt
+from schema import Schema, And, Or, Use
+s = Schema({
+            '--n_epoch': Use(int),
+            '--alpha': Use(float),
+})
+args = docopt(__doc__)
+args = s.validate(args)
+print args
+
 
 import sys
 import math
@@ -24,8 +34,6 @@ from dcnn_train import WordEmbeddingLayer,DynamicConvFoldingPoolLayer #, ConvFol
 from logreg import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
-
-from docopt import docopt
 
 
 rng = np.random.RandomState(1234)
@@ -58,7 +66,7 @@ def main():
 
 
 
-    args = docopt(__doc__)
+    
     print args
 
     EMB_DIM = 50
@@ -73,8 +81,8 @@ def main():
     width2 = 7
     k_top  = 4
     n_class = 5
-    alpha   = float(args.get("alpha",0.001))
-    n_epoch = int(args.get("n_epoch",200))
+    alpha   = args.get("--alpha")
+    n_epoch = args.get("--n_epoch")
     dropout_rate0 = 0.2
     dropout_rate1 = 0.4
     dropout_rate2 = 0.5
