@@ -16,7 +16,7 @@ Options:
     --dropout_rate0 <v>      dropout rate [default: 0.2].
     --dropout_rate1 <v>      dropout rate [default: 0.4].
     --dropout_rate2 <v>      dropout rate [default: 0.5].
-    --activation <s>         activation [default: "tanh"]
+    --activation <s>         activation [default: tanh]
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -63,7 +63,7 @@ def main():
     print "############# Load Datasets ##############"
 
     import stanfordSentimentTreebank as sst
-    vocab, index2word, datasets, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=False)
+    vocab, index2word, datasets, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=True)
     train_set, test_set, dev_set  = datasets
     get,sentence2ids, ids2sentence = funcs # 関数を読み込み
 
@@ -323,7 +323,7 @@ def main():
     def b(x_data):
         return np.array(x_data, dtype=np.int32)
 
-    '''
+
     def test(test_set):
         # print "############# TEST ##############"
         y_pred = []
@@ -362,21 +362,21 @@ def main():
         print '  dev_set   : %f' % test(dev_set)
         print '  test_set  : %f' % test(test_set)
 
-        '''
 
 
 
 
+    '''
     print "x_average :",sum([len(x_y_set[1]) for i,x_y_set in enumerate(train_set)]) / float(len(train_set))
 
-
-
+    # テストデータで過学習になる
+    # python dynamic_CNN_for_sentences.py --alpha=0.01 --n_epoch=500 --activation=tanh --feat_map_n_1=1 --feat_map_n_final=1 --dropout_rate0=0.0 --dropout_rate1=0.0 --dropout_rate2=0.0 --width1=5 --width2=5
 
     X_data = []
     Y_data = []
     for _ in xrange(8544):
         l = np.random.randint(5, 50)
-        X_data.append(np.random.randint(0,vocab_size, l))
+        X_data.append(np.random.randint(0, vocab_size, l))
         Y_data.append(np.random.randint(n_class))
 
     X_test = []
@@ -420,7 +420,7 @@ def main():
             test(X_test, Y_test)
 
     test()
-
+    '''
 
 if __name__ == '__main__':
     main()
