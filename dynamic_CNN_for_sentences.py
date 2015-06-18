@@ -51,18 +51,20 @@ def main():
     vocab_size = len(vocab)
 
 
-    feat_map_n_1 = 2
-    feat_map_n_final = 1
+    feat_map_n_1 = 3
+    feat_map_n_final = 2
 
     height = 1
     width1 = 10
     width2 = 7
     k_top  = 4
     n_class = 5
-    alpha   = 0.01
-    n_epoch = 500
-    dropout_rate1 = 0.2
+    alpha   = 0.1
+    n_epoch = 200
+    dropout_rate0 = 0.2
+    dropout_rate1 = 0.4
     dropout_rate2 = 0.5
+    activation = "relu"
     number_of_convolutinal_layer = 2
 
 
@@ -93,12 +95,22 @@ def main():
     # print dynamic_func(len([1,2,3]))
 
     l1 = DynamicConvFoldingPoolLayer(rng, 
-                              input = embeddings.output, 
+                              input = dropout(embeddings.output, p=dropout_rate0), 
                               filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
                               index_of_convolitonal_layer=1,
-                              length_x=length_x
+                              length_x=length_x,
+                              activation = activation
+    )
+    l1_no_dropout = DynamicConvFoldingPoolLayer(rng, 
+                              input = embeddings.output,
+                              filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
+                              k_top = k_top,
+                              number_of_convolutinal_layer=number_of_convolutinal_layer,
+                              index_of_convolitonal_layer=1,
+                              length_x=length_x,
+                              activation = activation
     )
 
 
@@ -109,10 +121,11 @@ def main():
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
                               index_of_convolitonal_layer=2,
-                              length_x=length_x
+                              length_x=length_x,
+                              activation = activation
     )
     l2_no_dropout = DynamicConvFoldingPoolLayer(rng, 
-                              input = l1.output,
+                              input = l1_no_dropout.output,
                               W=l2.W,
                               b=l2.b,
                               filter_shape = (feat_map_n_final, feat_map_n_1, height, width2),
@@ -120,7 +133,8 @@ def main():
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
                               index_of_convolitonal_layer=2,
-                              length_x=length_x
+                              length_x=length_x,
+                              activation = activation
     )
 
 
@@ -177,7 +191,7 @@ def main():
         input = dropout(l2.output.flatten(2), p=dropout_rate2),
         n_in = feat_map_n_final * k_top * EMB_DIM,
         # n_in = feat_map_n * k * EMB_DIM / 2, # we fold once, so divide by 2
-        n_out = n_class # five sentiment level
+        n_out = n_class, # five sentiment level
     )
 
     l_final_no_dropout = LogisticRegression(
@@ -187,7 +201,7 @@ def main():
         b = l_final.b,
         n_in = feat_map_n_final * k_top * EMB_DIM,
         # n_in = feat_map_n * k * EMB_DIM / 2, # we fold once, so divide by 2
-        n_out = n_class # five sentiment level
+        n_out = n_class, # five sentiment level
     )
 
 

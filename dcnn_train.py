@@ -129,7 +129,8 @@ class DynamicConvFoldingPoolLayer(object):
         self.param_shapes = [filter_shape,
                              b_size ]
     def dynamic_k(self,length_x, number_of_convolutinal_layer,index_of_convolitonal_layer,k_top):
-        dynamic_k = T.cast(length_x * (number_of_convolutinal_layer - index_of_convolitonal_layer) / number_of_convolutinal_layer, 'int64')
+        # dynamic_k = T.cast(length_x * (number_of_convolutinal_layer - index_of_convolitonal_layer) / number_of_convolutinal_layer, 'int64')
+        dynamic_k = T.cast(length_x * (number_of_convolutinal_layer - index_of_convolitonal_layer) //number_of_convolutinal_layer, 'int64')
         # if T.le(dynamic_k, k_top):
         #     dynamic_k = k_top 
         return T.maximum(k_top, dynamic_k)
