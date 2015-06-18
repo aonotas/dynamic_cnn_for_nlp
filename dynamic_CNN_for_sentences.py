@@ -3,11 +3,20 @@
 
 __doc__ = """{f}
 Usage:
-    {f} --alpha=<alpha> --n_epoch=<n_epoch>
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
-    --alpha <alpha>          Learning rate [default: 0.001]
+    --alpha <alpha>          Learning rate [default: 0.001].
+    --feat_map_n_1 <v>       Learning rate [default: 3].
+    --feat_map_n_final <v>   Learning rate [default: 4].
+    --width1 <v>             width [default: 10].
+    --width2 <v>             width [default: 7].
+    --k_top <v>              k_top [default: 4].
+    --dropout_rate0 <v>      dropout rate [default: 0.2].
+    --dropout_rate1 <v>      dropout rate [default: 0.4].
+    --dropout_rate2 <v>      dropout rate [default: 0.5].
+    --activation <s>         activation [default: "tanh"]
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -16,6 +25,16 @@ from schema import Schema, And, Or, Use
 s = Schema({
             '--n_epoch': Use(int),
             '--alpha': Use(float),
+            '--width1': Use(int),
+            '--width2': Use(int),
+            '--feat_map_n_1': Use(int),
+            '--feat_map_n_final': Use(int),
+            '--feat_map_n_final': Use(int),
+            '--k_top': Use(int),
+            '--dropout_rate0': Use(float),
+            '--dropout_rate1': Use(float),
+            '--dropout_rate2': Use(float),
+            '--activation': Use(str)
 })
 args = docopt(__doc__)
 args = s.validate(args)
@@ -73,20 +92,20 @@ def main():
     vocab_size = len(vocab)
 
 
-    feat_map_n_1 = 3
-    feat_map_n_final = 2
+    feat_map_n_1 = args.get("--feat_map_n_1")
+    feat_map_n_final = args.get("--feat_map_n_final")
 
     height = 1
-    width1 = 10
-    width2 = 7
-    k_top  = 4
+    width1 = args.get("--width1")
+    width2 = args.get("--width2")
+    k_top  = args.get("--k_top")
     n_class = 5
     alpha   = args.get("--alpha")
     n_epoch = args.get("--n_epoch")
-    dropout_rate0 = 0.2
-    dropout_rate1 = 0.4
-    dropout_rate2 = 0.5
-    activation = "relu"
+    dropout_rate0 = args.get("--dropout_rate0")
+    dropout_rate1 = args.get("--dropout_rate1")
+    dropout_rate2 = args.get("--dropout_rate2")
+    activation = args.get("--activation")
     number_of_convolutinal_layer = 2
 
 
