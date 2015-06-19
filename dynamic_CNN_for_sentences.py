@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -17,6 +17,7 @@ Options:
     --dropout_rate1 <v>      dropout rate [default: 0.4].
     --dropout_rate2 <v>      dropout rate [default: 0.5].
     --activation <s>         activation [default: tanh]
+    --learn <s>         activation [default: adam]
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -34,7 +35,8 @@ s = Schema({
             '--dropout_rate0': Use(float),
             '--dropout_rate1': Use(float),
             '--dropout_rate2': Use(float),
-            '--activation': Use(str)
+            '--activation': Use(str),
+            '--learn': Use(str)
 })
 args = docopt(__doc__)
 args = s.validate(args)
@@ -106,6 +108,7 @@ def main():
     dropout_rate1 = args.get("--dropout_rate1")
     dropout_rate2 = args.get("--dropout_rate2")
     activation = args.get("--activation")
+    learn      = args.get("--learn")
     number_of_convolutinal_layer = 2
 
 
@@ -299,14 +302,22 @@ def main():
             updates.append([p, p - g * lr])
         return updates
 
-    from sgd import rmsprop,adagrad,adadelta,adam
+    from sgd import rmsprop, adagrad, adadelta, adam
 
     # updates = sgd(cost, l_final.params)
 
     # print param_grads
+    if learn == "sgd":
+        updates = sgd(cost, params, lr=0.05)
+    elif learn == "adam":
+        updates = adam(loss_or_grads=cost, params=params, learning_rate=alpha)
+    elif learn == "adagrad":
+        updates = adagrad(loss_or_grads=cost, params=params, learning_rate=alpha)
+    elif learn == "adadelta":
+        updates = adadelta(loss_or_grads=cost, params=params)
+    elif learn == "rmsprop":
+        updates = rmsprop(loss_or_grads=cost, params=params, learning_rate=alpha)
 
-    # updates = sgd(cost, params, lr=0.05)
-    updates = adam(loss_or_grads=cost, params=params, learning_rate=alpha)
 
     train = theano.function(inputs=[x, length_x, y], outputs=cost, updates=updates, allow_input_downcast=True)
     # predict = theano.function(inputs=[X], outputs=y_x, allow_input_downcast=True)
