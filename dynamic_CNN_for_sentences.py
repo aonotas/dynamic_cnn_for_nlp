@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -16,8 +16,9 @@ Options:
     --dropout_rate0 <v>      dropout rate [default: 0.2].
     --dropout_rate1 <v>      dropout rate [default: 0.4].
     --dropout_rate2 <v>      dropout rate [default: 0.5].
-    --activation <s>         activation [default: tanh]
-    --learn <s>         activation [default: adam]
+    --activation <s>         activation [default: tanh].
+    --learn <s>              activation [default: adam].
+    --skip <v>               skip_unknown_words [default: 1].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -36,7 +37,8 @@ s = Schema({
             '--dropout_rate1': Use(float),
             '--dropout_rate2': Use(float),
             '--activation': Use(str),
-            '--learn': Use(str)
+            '--learn': Use(str),
+            '--skip': Use(int),
 })
 args = docopt(__doc__)
 args = s.validate(args)
@@ -65,7 +67,10 @@ def main():
     print "############# Load Datasets ##############"
 
     import stanfordSentimentTreebank as sst
-    vocab, index2word, datasets, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=True)
+
+    skip_unknown_words = bool(args.get("--skip"))
+    # print "skip_unknown_words",skip_unknown_words
+    vocab, index2word, datasets, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=skip_unknown_words)
     train_set, test_set, dev_set  = datasets
     get,sentence2ids, ids2sentence = funcs # 関数を読み込み
 
@@ -77,9 +82,9 @@ def main():
     test_set  = [(score, ids) for score,(ids,unknown_word_count) in test_set]
     dev_set   = [(score, ids) for score,(ids,unknown_word_count) in dev_set]
 
-    print "train_set : ", len(train_set)
-    print "dev_set   : ", len(dev_set)
-    print "test_set  : ", len(test_set)
+    print "train_size : ", len(train_set)
+    print "dev_size   : ", len(dev_set)
+    print "test_size  : ", len(test_set)
     print "-"*30
     print "vocab_szie: ", len(vocab)
     print "dev_unknown_words  : ", dev_unknown_count
@@ -358,7 +363,7 @@ def main():
         # print "  accuracy : %f" % Accuracy, 
         return accuracy_score(test_set_y, y_pred)
         # print classification_report(test_set_y, y_pred)
-
+    train_cost_sum = 0.0
     for epoch in xrange(n_epoch):
         print "== epoch : %d =="  % epoch
         for i,x_y_set in enumerate(train_set):
@@ -367,10 +372,12 @@ def main():
             train_y = b([train_y])
 
             train_cost = train(train_x, len(train_x) , train_y)
+            train_cost_sum += train_cost
             if i % 1000 == 0 or i == len(train_set)-1:
-                print "i : (%d/%d)" % (i, len(train_set)) , " (cost : %f )" % train_cost
+                print "i : (%d/%d)" % (i, len(train_set)) , 
+                print " (cost : %f )" % train_cost
         
-
+        print '  cost :', train_cost_sum
         print '  train_set : %f' % test(train_set)
         print '  dev_set   : %f' % test(dev_set)
         print '  test_set  : %f' % test(test_set)
