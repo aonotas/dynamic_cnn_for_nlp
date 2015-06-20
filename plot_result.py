@@ -24,7 +24,7 @@ def log_file(filename):
 def main():
     argvs = sys.argv
     filename = argvs[1]
-    save_filename = filename.replace(".log", ".png")
+    save_filename = filename.replace(".log", ".png").replace("log/","log/png/")
     train_set, dev_set, test_set = log_file(filename=filename)
     print "train_best", max(train_set)
     print "dev_best", max(dev_set)

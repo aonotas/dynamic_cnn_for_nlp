@@ -61,10 +61,13 @@ if __name__ == '__main__':
     print embeddings
     # model = learn_word2vec(sentences, emb_dim=emb_dim)
 
-    print model.vocab.get('movie').index
-    print index2word.index('movie')
-    # print model.most_similar('movie')
-    # print model.most_similar('good')
-    # print model.most_similar('positives')
+    # print model.vocab.get('movie').index
+    # print index2word.index('movie')
+
+    print model.most_similar('movie')
+    print ""
+    print model.most_similar('good')
+    print ""
+    print model.most_similar('positives')
     # print model.most_similar('2002')
 

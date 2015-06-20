@@ -224,14 +224,20 @@ class WordEmbeddingLayer(object):
         """     
 
 
-        if embeddings:
+        if embeddings is not None:
             print "Use pretrained embeddings: ON"
-            assert embeddings.get_value().shape == (vocab_size, embed_dm), "%r != %r" %(
-                embeddings.get_value().shape, 
-                (vocab_size, embed_dm)
+            # assert embeddings.get_value().shape == (vocab_size, embed_dm), "%r != %r" %(
+            #     embeddings.get_value().shape, 
+            #     (vocab_size, embed_dm)
+            # )
+            self.embeddings = theano.shared(
+                np.asarray(embeddings, 
+                           dtype = theano.config.floatX),
+                borrow = True,
+                name = 'embeddings'
             )
             
-            self.embeddings = embeddings
+            # self.embeddings = embeddings
         else:
             print "Use pretrained embeddings: OFF"
             embedding_val = np.asarray(
