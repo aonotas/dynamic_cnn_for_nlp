@@ -149,6 +149,8 @@ def main():
     )
     l1_no_dropout = DynamicConvFoldingPoolLayer(rng, 
                               input = embeddings.output,
+                              W=l1.W,
+                              b=l1.b,
                               filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
                               k_top = k_top,
                               number_of_convolutinal_layer=number_of_convolutinal_layer,
