@@ -143,8 +143,8 @@ def main():
         embeddings_W[0,:] = 0
 
 
-    print "*embeddings"
-    print embeddings_W
+    # print "*embeddings"
+    # print embeddings_W
     # print bool(embeddings)
 
     # input_x = [1, 3, 4, 5, 0, 22, 4, 5]
