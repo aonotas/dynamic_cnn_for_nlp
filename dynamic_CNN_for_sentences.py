@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -20,6 +20,7 @@ Options:
     --learn <s>              activation [default: adam].
     --pretrain <s>           pretrain [default: None]
     --skip <v>               skip_unknown_words [default: 1].
+    --datatype <v>           datatype fine-grained or binary [default: 5].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -48,6 +49,7 @@ s = Schema({
             '--learn': Use(str),
             '--skip': Use(int),
             '--pretrain': Use(str),
+            '--datatype': Use(int),
 })
 args = docopt(__doc__)
 args = s.validate(args)
@@ -79,8 +81,16 @@ def main():
     import stanfordSentimentTreebank as sst
 
     skip_unknown_words = bool(args.get("--skip"))
+    datatype = args.get("--datatype")
+    if datatype == 5:
+        # Fine-grained 5-class
+        n_class = 5
+    elif datatype == 2:
+        # Binary 2-class
+        n_class = 2
+
     # print "skip_unknown_words",skip_unknown_words
-    vocab, index2word, datasets, datasets_all_sentences, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=skip_unknown_words)
+    vocab, index2word, datasets, datasets_all_sentences, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=skip_unknown_words, datatype=datatype)
     train_set, test_set, dev_set  = datasets
     train_set_sentences, test_set_sentences, dev_set_sentences = datasets_all_sentences
     get,sentence2ids, ids2sentence = funcs # 関数を読み込み
@@ -120,7 +130,7 @@ def main():
     width1 = args.get("--width1")
     width2 = args.get("--width2")
     k_top  = args.get("--k_top")
-    n_class = 5
+    n_class = n_class
     alpha   = args.get("--alpha")
     n_epoch = args.get("--n_epoch")
     dropout_rate0 = args.get("--dropout_rate0")
