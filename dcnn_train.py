@@ -239,8 +239,8 @@ class WordEmbeddingLayer(object):
                 dtype = theano.config.floatX
             )
             
-            embedding_val[vocab_size-1,:] = 0 # the <PADDING> character is intialized to 0
-            
+            # embedding_val[vocab_size-1,:] = 0 # the <PADDING> character is intialized to 0
+            embedding_val[0,:] = 0
             self.embeddings = theano.shared(
                 np.asarray(embedding_val, 
                            dtype = theano.config.floatX),

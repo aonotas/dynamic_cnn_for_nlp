@@ -156,8 +156,9 @@ def load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=Tr
     dev_set   = [(score, sentence2ids(sentence)) for score,sentence in dev_set_sentences]
 
     datasets_all = (train_set, test_set, dev_set)
+    datasets_all_sentences = (train_set_sentences, test_set_sentences, dev_set_sentences)
     funcs = (get,sentence2ids,ids2sentence)
-    return vocab, index2word, datasets_all, funcs
+    return vocab, index2word, datasets_all, datasets_all_sentences, funcs
 
 
 

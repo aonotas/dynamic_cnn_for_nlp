@@ -77,8 +77,9 @@ def main():
 
     skip_unknown_words = bool(args.get("--skip"))
     # print "skip_unknown_words",skip_unknown_words
-    vocab, index2word, datasets, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=skip_unknown_words)
+    vocab, index2word, datasets, datasets_all_sentences, funcs = sst.load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=skip_unknown_words)
     train_set, test_set, dev_set  = datasets
+    train_set_sentences, test_set_sentences, dev_set_sentences = datasets_all_sentences
     get,sentence2ids, ids2sentence = funcs # 関数を読み込み
 
 
@@ -93,7 +94,7 @@ def main():
     print "dev_size   : ", len(dev_set)
     print "test_size  : ", len(test_set)
     print "-"*30
-    print "vocab_szie: ", len(vocab)
+    print "vocab_size: ", len(vocab)
     print "dev_unknown_words  : ", dev_unknown_count
     print "test_unknown_words : ", test_unknown_count
 
