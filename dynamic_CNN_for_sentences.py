@@ -149,7 +149,7 @@ def main():
     )
     l1_no_dropout = DynamicConvFoldingPoolLayer(rng, 
                               input = embeddings.output,
-                              W=l1.W,
+                              W=l1.W * (1 - dropout_rate0),
                               b=l1.b,
                               filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
                               k_top = k_top,
@@ -172,7 +172,7 @@ def main():
     )
     l2_no_dropout = DynamicConvFoldingPoolLayer(rng, 
                               input = l1_no_dropout.output,
-                              W=l2.W,
+                              W=l2.W * (1 - dropout_rate1),
                               b=l2.b,
                               filter_shape = (feat_map_n_final, feat_map_n_1, height, width2),
                               # two feature map, height: 1, width: 2, 
@@ -243,7 +243,7 @@ def main():
     l_final_no_dropout = LogisticRegression(
         rng, 
         input = l2_no_dropout.output.flatten(2),
-        W = l_final.W,
+        W = l_final.W * (1 - dropout_rate2),
         b = l_final.b,
         n_in = feat_map_n_final * k_top * EMB_DIM,
         # n_in = feat_map_n * k * EMB_DIM / 2, # we fold once, so divide by 2
