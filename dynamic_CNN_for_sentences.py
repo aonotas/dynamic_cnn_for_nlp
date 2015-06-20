@@ -22,6 +22,13 @@ Options:
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
+'''
+    TODO:
+        pretrained word embeddings
+        visualise word embeddings
+        visualise filters
+'''
+
 from docopt import docopt
 from schema import Schema, And, Or, Use
 s = Schema({
