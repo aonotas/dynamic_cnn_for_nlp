@@ -35,7 +35,20 @@ def get_vec(model, word):
 
 
 def use_word2vec(sentences, index2word, emb_dim=50):
-    model = learn_word2vec(sentences, emb_dim=emb_dim)
+    model = word2vec.Word2Vec(None, size=emb_dim, window=5, min_count=0)
+    model.build_vocab(sentences)
+    # model.syn0 = np.random.uniform(0,0.05,model.syn0.shape)
+    # model.syn0 = np.random.rand(emb_dim) - 0.5 / emb_dim
+    syn0 = np.copy(model.syn0)
+    # np.random.uniform(0, 0.05, emb_dim)
+    for i in xrange(emb_dim):
+        syn0[i] = np.random.uniform(0, 0.05, emb_dim)
+        # syn0[i] = np.random.rand(emb_dim) + 0.5 / emb_dim
+    model.syn0 = np.copy(syn0)
+    model.train(sentences)
+    # print model.most_similar('movie')
+    # print model.most_similar('worth')
+
     embeddings = []
     for index,word in enumerate(index2word):
         vec = get_vec(model, word)

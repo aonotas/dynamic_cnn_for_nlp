@@ -145,6 +145,7 @@ def main():
     if pretrain == 'word2vec':
         print "*Using word2vec"
         embeddings_W, model = pretrained_embedding.use_word2vec(sentences=sentences, index2word=index2word, emb_dim=EMB_DIM)
+        # -0.5 ~ 0.5で初期化している
     else:
         embeddings_W = np.asarray(
             rng.normal(0, 0.05, size = (vocab_size, EMB_DIM)), 
@@ -152,7 +153,8 @@ def main():
         )
         embeddings_W[0,:] = 0
 
-
+    print np.amax(embeddings_W)
+    print np.amin(embeddings_W)
     # print "*embeddings"
     # print embeddings_W
     # print bool(embeddings)

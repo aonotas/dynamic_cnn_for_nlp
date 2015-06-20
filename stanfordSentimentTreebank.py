@@ -100,7 +100,7 @@ def build_vocab(ids, datasets, min_count=1, unknown_word_identity=''):
 
 
 # データセットの読み込み
-def load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=True):
+def load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=True, datatype=5):
     csv_filename = 'data/movie/stanfordSentimentTreebank/datasetSplit.txt'
     train_ids,test_ids,dev_ids = load_splitset(csv_filename)
     csv_filename = 'data/movie/stanfordSentimentTreebank/datasetSentences.txt'
@@ -150,6 +150,27 @@ def load_stanfordSentimentTreebank_dataset(normalize=True, skip_unknown_words=Tr
     train_set_sentences = [(int(score), n(datasets[index])) for index, score in zip(train_ids, train_scores)]
     test_set_sentences  = [(int(score), n(datasets[index])) for index, score in zip(test_ids, test_scores)]
     dev_set_sentences   = [(int(score), n(datasets[index])) for index, score in zip(dev_ids, dev_scores)]
+
+    # fine-grained 5 class 
+    # Binary 2 class class=2はスキップ
+    if datatype == 2:
+        def filter_class(i):
+            if i in [0,1,3,4]:
+                return True
+            else:
+                return False
+        def bc(i):
+            if i in [0,1]:
+                # negative
+                return 0
+            elif i in [3,4]:
+                # positive
+                return 1
+        train_set_sentences = [(bc(score),sentence) for score,sentence in train_set_sentences if filter_class(score)]
+        test_set_sentences  = [(bc(score),sentence) for score,sentence in test_set_sentences if filter_class(score)]
+        dev_set_sentences   = [(bc(score),sentence) for score,sentence in dev_set_sentences if filter_class(score)]
+
+
 
     train_set = [(score, sentence2ids(sentence)) for score,sentence in train_set_sentences]
     test_set  = [(score, sentence2ids(sentence)) for score,sentence in test_set_sentences]
