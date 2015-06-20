@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -18,6 +18,7 @@ Options:
     --dropout_rate2 <v>      dropout rate [default: 0.5].
     --activation <s>         activation [default: tanh].
     --learn <s>              activation [default: adam].
+    --pretrain <s>           pretrain [default: None]
     --skip <v>               skip_unknown_words [default: 1].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
@@ -46,6 +47,7 @@ s = Schema({
             '--activation': Use(str),
             '--learn': Use(str),
             '--skip': Use(int),
+            '--pretrain': Use(str),
 })
 args = docopt(__doc__)
 args = s.validate(args)
@@ -62,6 +64,7 @@ theano.config.exception_verbosity='high'
 
 from dcnn_train import WordEmbeddingLayer,DynamicConvFoldingPoolLayer #, ConvFoldingPoolLayer
 from logreg import LogisticRegression
+import pretrained_embedding
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 
@@ -81,8 +84,11 @@ def main():
     train_set, test_set, dev_set  = datasets
     train_set_sentences, test_set_sentences, dev_set_sentences = datasets_all_sentences
     get,sentence2ids, ids2sentence = funcs # 関数を読み込み
+    scores, sentences = zip(*train_set_sentences)
+    sentences = [[word for word in sentence.lower().split()] for sentence in sentences]
+    vocab_size = len(vocab)
 
-
+ 
     dev_unknown_count  = sum([unknown_word_count for score,(ids,unknown_word_count) in dev_set])
     test_unknown_count = sum([unknown_word_count for score,(ids,unknown_word_count) in test_set])
 
@@ -125,15 +131,31 @@ def main():
     number_of_convolutinal_layer = 2
 
 
+    pretrain = args.get('--pretrain')
+    if pretrain == 'word2vec':
+        print "*Using word2vec"
+        embeddings_W, model = pretrained_embedding.use_word2vec(sentences=sentences, index2word=index2word, emb_dim=EMB_DIM)
+    else:
+        embeddings_W = np.asarray(
+            rng.normal(0, 0.05, size = (vocab_size, EMB_DIM)), 
+            dtype = theano.config.floatX
+        )
+        embeddings_W[0,:] = 0
+
+
+    print "*embeddings"
+    print embeddings_W
+    # print bool(embeddings)
+
     # input_x = [1, 3, 4, 5, 0, 22, 4, 5]
 
     print "############# Model Setting ##############"    
     x = T.imatrix('x')
     length_x = T.iscalar('length_x')
     y = T.ivector('y') # the sentence sentiment label
-    embeddings = WordEmbeddingLayer(rng, 
-                            x,
-                            vocab_size, EMB_DIM, None)
+    embeddings = WordEmbeddingLayer(rng=rng, 
+                            input=x,
+                            vocab_size=vocab_size, embed_dm=EMB_DIM, embeddings=embeddings_W)
 
 
     def dropout(X, p=0.5):
