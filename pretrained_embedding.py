@@ -74,8 +74,9 @@ def use_glove(sentences, emb_dim=50):
 
 
     def save_per(W,i):
-        if i % 100 and i > 0:
+        if i % 100 and i >= 100:
             filename = "log/glove_%d_iter%d.model" % (emb_dim, i)
+            W = evaluate.merge_main_context(W)
             glove.save_model(W, filename)
             evaluate_word(W)
 
