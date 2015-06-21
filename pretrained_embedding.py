@@ -4,6 +4,9 @@
 import numpy as np
 from gensim.models import word2vec
 import logging
+import glove
+import evaluate
+import pickle
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
@@ -35,19 +38,18 @@ def get_vec(model, word):
 
 
 def use_word2vec(sentences, index2word, emb_dim=50):
-    model = word2vec.Word2Vec(None, size=emb_dim, window=5, min_count=0)
+    model = word2vec.Word2Vec(None, size=emb_dim, window=10, min_count=0, sg=1, negative=0, hs=1)
+    # model = word2vec.Word2Vec(None, size=emb_dim, window=10, min_count=0, sg=0, negative=20, hs=0)
     model.build_vocab(sentences)
     # model.syn0 = np.random.uniform(0,0.05,model.syn0.shape)
     # model.syn0 = np.random.rand(emb_dim) - 0.5 / emb_dim
-    syn0 = np.copy(model.syn0)
+    # syn0 = np.copy(model.syn0)
     # np.random.uniform(0, 0.05, emb_dim)
-    for i in xrange(emb_dim):
-        syn0[i] = np.random.uniform(0, 0.05, emb_dim)
+    # for i in xrange(emb_dim):
+        # syn0[i] = np.random.uniform(0, 0.05, emb_dim)
         # syn0[i] = np.random.rand(emb_dim) + 0.5 / emb_dim
-    model.syn0 = np.copy(syn0)
+    # model.syn0 = np.copy(syn0)
     model.train(sentences)
-    # print model.most_similar('movie')
-    # print model.most_similar('worth')
 
     embeddings = []
     for index,word in enumerate(index2word):
@@ -55,6 +57,41 @@ def use_word2vec(sentences, index2word, emb_dim=50):
         embeddings.append(vec)
     embeddings = np.asarray(embeddings)
     return embeddings, model
+
+
+def use_glove(sentences):
+    glove.logger.setLevel(logging.INFO)
+    vocab = glove.build_vocab(sentences)
+    # cooccur = glove.build_cooccur(vocab, sentences, window_size=10)
+    id2word = evaluate.make_id2word(vocab)
+
+
+
+    # W = glove.train_glove(vocab, cooccur, vector_size=10, iterations=25)
+    # # Merge and normalize word vectors
+    # W = evaluate.merge_main_context(W)
+    # glove.save_model(W, "glove_25.model")
+
+    # W = glove.train_glove(vocab, cooccur, vector_size=10, iterations=500)
+    # # Merge and normalize word vectors
+    # W = evaluate.merge_main_context(W)
+    # glove.save_model(W, "glove_500.model")
+
+    def e():
+        words = ['good', 'movie', 'bad', 'worth']
+        for word in words:
+            print evaluate.most_similar(W, vocab, id2word, word)
+
+
+
+    W = glove.load_model('glove_25.model')
+    e()
+    print ""
+    W = glove.load_model('glove_500.model')
+    e()
+
+
+
 
 if __name__ == '__main__':
     import stanfordSentimentTreebank as sst
@@ -70,17 +107,15 @@ if __name__ == '__main__':
 
 
     emb_dim = 50
-    embeddings, model = use_word2vec(sentences=sentences, index2word=index2word, emb_dim=emb_dim)
-    print embeddings
-    # model = learn_word2vec(sentences, emb_dim=emb_dim)
+    use_glove(sentences)
+    # embeddings, model = use_word2vec(sentences=sentences, index2word=index2word, emb_dim=emb_dim)
+    # print embeddings
 
-    # print model.vocab.get('movie').index
-    # print index2word.index('movie')
 
-    print model.most_similar('movie')
-    print ""
-    print model.most_similar('good')
-    print ""
-    print model.most_similar('positives')
+    # print model.most_similar('movie')
+    # print ""
+    # print model.most_similar('good')
+    # print ""
+    # print model.most_similar('cat')
     # print model.most_similar('2002')
 
