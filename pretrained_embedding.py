@@ -59,16 +59,29 @@ def use_word2vec(sentences, index2word, emb_dim=50):
     return embeddings, model
 
 
-def use_glove(sentences):
+
+def use_glove(sentences, emb_dim=50):
     glove.logger.setLevel(logging.INFO)
     vocab = glove.build_vocab(sentences)
-    # cooccur = glove.build_cooccur(vocab, sentences, window_size=10)
+    cooccur = glove.build_cooccur(vocab, sentences, window_size=10)
     id2word = evaluate.make_id2word(vocab)
 
 
+    def evaluate_word(W):
+        words = ['good', 'movie', 'bad', 'worth', 'dog']
+        for word in words:
+            print evaluate.most_similar(W, vocab, id2word, word)
 
-    # W = glove.train_glove(vocab, cooccur, vector_size=10, iterations=25)
-    # # Merge and normalize word vectors
+
+    def save_per(W,i):
+        if i % 100 and i > 0:
+            filename = "log/glove_%d_iter%d.model" % (emb_dim, i)
+            glove.save_model(W, filename)
+            evaluate_word(W)
+
+    W = glove.train_glove(vocab, cooccur, vector_size=emb_dim, iterations=3000, iter_callback=save_per)
+
+    # Merge and normalize word vectors
     # W = evaluate.merge_main_context(W)
     # glove.save_model(W, "glove_25.model")
 
@@ -77,18 +90,13 @@ def use_glove(sentences):
     # W = evaluate.merge_main_context(W)
     # glove.save_model(W, "glove_500.model")
 
-    def e():
-        words = ['good', 'movie', 'bad', 'worth']
-        for word in words:
-            print evaluate.most_similar(W, vocab, id2word, word)
 
 
-
-    W = glove.load_model('glove_25.model')
-    e()
-    print ""
-    W = glove.load_model('glove_500.model')
-    e()
+    # W = glove.load_model('glove_25.model')
+    
+    # print ""
+    # W = glove.load_model('glove_500.model')
+    # e()
 
 
 
@@ -107,7 +115,7 @@ if __name__ == '__main__':
 
 
     emb_dim = 50
-    use_glove(sentences)
+    use_glove(sentences, emb_dim=emb_dim)
     # embeddings, model = use_word2vec(sentences=sentences, index2word=index2word, emb_dim=emb_dim)
     # print embeddings
 
