@@ -366,7 +366,7 @@ def train_glove(vocab, cooccurrences, iter_callback=None, vector_size=100,
         logger.info("\t\tDone (cost %f)", cost)
 
         if iter_callback is not None:
-            iter_callback(W)
+            iter_callback(W,i)
 
     return W
 
