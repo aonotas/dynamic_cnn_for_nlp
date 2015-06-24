@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>] [--shuffle <v>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -20,6 +20,7 @@ Options:
     --learn <s>              activation [default: adam].
     --pretrain <s>           pretrain [default: None]
     --skip <v>               skip_unknown_words [default: 1].
+    --shuffle <v>            shuffle data [default: 0].
     --datatype <v>           datatype fine-grained or binary [default: 5].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
@@ -48,6 +49,7 @@ s = Schema({
             '--activation': Use(str),
             '--learn': Use(str),
             '--skip': Use(int),
+            '--shuffle': Use(int),
             '--pretrain': Use(str),
             '--datatype': Use(int),
 })
@@ -71,6 +73,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 
 
+np.random.seed(1234)
 rng = np.random.RandomState(1234)
 srng = RandomStreams()
 
@@ -81,6 +84,7 @@ def main():
     import stanfordSentimentTreebank as sst
 
     skip_unknown_words = bool(args.get("--skip"))
+    shuffle_flag = bool(args.get("--shuffle"))
     datatype = args.get("--datatype")
     if datatype == 5:
         # Fine-grained 5-class
@@ -405,10 +409,15 @@ def main():
         # print "  accuracy : %f" % Accuracy, 
         return accuracy_score(test_set_y, y_pred)
         # print classification_report(test_set_y, y_pred)
+
+    # train_set_rand = np.copy(train_set)
+    train_set_rand = train_set
     train_cost_sum = 0.0
     for epoch in xrange(n_epoch):
         print "== epoch : %d =="  % epoch
-        for i,x_y_set in enumerate(train_set):
+        if shuffle_flag:
+            train_set_rand = np.random.permutation(train_set)
+        for i,x_y_set in enumerate(train_set_rand):
             train_y, train_x = x_y_set
             train_x = b([train_x])
             train_y = b([train_y])
