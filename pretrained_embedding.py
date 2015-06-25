@@ -59,8 +59,27 @@ def use_word2vec(sentences, index2word, emb_dim=50):
     return embeddings, model
 
 
+def use_glove(sentences, index2word, model_file='glove_model/glove_50_iter2900.model',emb_dim=50):
+    glove.logger.setLevel(logging.INFO)
+    vocab = glove.build_vocab(sentences)
+    # cooccur = glove.build_cooccur(vocab, sentences, window_size=10)
+    # id2word = evaluate.make_id2word(vocab)
 
-def use_glove(sentences, emb_dim=50):
+    W = glove.load_model(model_file)
+    embeddings = []
+    for index,word in enumerate(index2word):
+        if word in vocab:
+            word_id = vocab[word][0]
+            vec = W[word_id]
+        else:
+            vec = np.zeros(shape=(W.shape[1],))
+
+        embeddings.append(vec)
+    embeddings = np.asarray(embeddings)
+
+    return embeddings
+
+def train_glove(sentences, emb_dim=50):
     glove.logger.setLevel(logging.INFO)
     vocab = glove.build_vocab(sentences)
     cooccur = glove.build_cooccur(vocab, sentences, window_size=10)

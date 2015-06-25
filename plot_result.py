@@ -11,6 +11,7 @@ def log_file(filename):
     train_set = []
     dev_set   = []
     test_set  = []
+    min_len = 1000
     for l in open(filename):
         v = l.split(":")
         train_flag = " train_set" in l
@@ -43,9 +44,10 @@ def main():
     def plot(filename):
         save_filename = filename.replace(".log", ".png").replace("log/","log/png/")
         train_set, dev_set, test_set = log_file(filename=filename)
-        print "train_best", max(train_set)
-        print "dev_best", max(dev_set)
-        print "test_best", max(test_set)
+        print filename
+        print "\t train_best", max(train_set)
+        print "\t dev_best", max(dev_set)
+        print "\t test_best", max(test_set)
 
         x = range(len(train_set))
         plt.ylim([0.0, 1.0])
@@ -54,7 +56,7 @@ def main():
         plt.plot(x, test_set,  "g", linewidth=2, alpha=0.8, label="test")
         plt.legend(loc='lower right')
         # plt.show()
-        print save_filename
+        # print save_filename
 
         plt.savefig(save_filename)
         plt.show()

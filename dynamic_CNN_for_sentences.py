@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>] [--shuffle <v>]
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>] [--shuffle <v>] [--emb_size <v>] 
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -18,10 +18,11 @@ Options:
     --dropout_rate2 <v>      dropout rate [default: 0.5].
     --activation <s>         activation [default: tanh].
     --learn <s>              activation [default: adam].
-    --pretrain <s>           pretrain [default: None]
+    --pretrain <s>           pretrain [default: None].
     --skip <v>               skip_unknown_words [default: 1].
     --shuffle <v>            shuffle data [default: 0].
     --datatype <v>           datatype fine-grained or binary [default: 5].
+    --emb_size <v>           embedding size [default: 50].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -51,6 +52,7 @@ s = Schema({
             '--skip': Use(int),
             '--shuffle': Use(int),
             '--pretrain': Use(str),
+            '--emb_size': Use(int),
             '--datatype': Use(int),
 })
 args = docopt(__doc__)
@@ -123,7 +125,8 @@ def main():
     
     print args
 
-    EMB_DIM = 50
+    # EMB_DIM = 50
+    EMB_DIM = args.get("--emb_size")
     vocab_size = len(vocab)
 
 
@@ -150,6 +153,9 @@ def main():
         print "*Using word2vec"
         embeddings_W, model = pretrained_embedding.use_word2vec(sentences=sentences, index2word=index2word, emb_dim=EMB_DIM)
         # -0.5 ~ 0.5で初期化している
+    elif pretrain == 'glove':
+        print "*Using glove"
+        embeddings_W = pretrained_embedding.use_glove(sentences=sentences, index2word=index2word, emb_dim=EMB_DIM, model_file='glove_model/glove_50_iter2900.model')
     else:
         embeddings_W = np.asarray(
             rng.normal(0, 0.05, size = (vocab_size, EMB_DIM)), 
