@@ -178,7 +178,7 @@ def main():
         if p > 0:
             retain_prob = 1 - p
             X *= srng.binomial(X.shape, p=retain_prob, dtype=theano.config.floatX)
-            X /= retain_prob
+            # X /= retain_prob
         return X
     # number_of_convolutinal_layer = theano.shared(number_of_convolutinal_layer)
     # dynamic_func = theano.function(inputs=[length_x], outputs=number_of_convolutinal_layer * length_x)
@@ -188,7 +188,7 @@ def main():
     #     outputs = dynamic_func(length_x),
     #     )
     # print dynamic_func(len([1,2,3]))
-
+    
     l1 = DynamicConvFoldingPoolLayer(rng, 
                               input = dropout(embeddings.output, p=dropout_rate0), 
                               filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
