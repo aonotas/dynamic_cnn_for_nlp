@@ -188,7 +188,7 @@ def main():
     #     outputs = dynamic_func(length_x),
     #     )
     # print dynamic_func(len([1,2,3]))
-    
+
     l1 = DynamicConvFoldingPoolLayer(rng, 
                               input = dropout(embeddings.output, p=dropout_rate0), 
                               filter_shape = (feat_map_n_1, 1, height, width1),  # two feature map, height: 1, width: 2, 
@@ -410,13 +410,14 @@ def main():
         return accuracy_score(test_set_y, y_pred)
         # print classification_report(test_set_y, y_pred)
 
-    # train_set_rand = np.copy(train_set)
-    train_set_rand = train_set
+    # train_set_rand = np.ndarray(train_set)
+    train_set_rand = train_set[:]
     train_cost_sum = 0.0
     for epoch in xrange(n_epoch):
         print "== epoch : %d =="  % epoch
         if shuffle_flag:
-            train_set_rand = np.random.permutation(train_set)
+            np.random.shuffle(train_set_rand)
+            # train_set_rand = np.random.permutation(train_set)
         for i,x_y_set in enumerate(train_set_rand):
             train_y, train_x = x_y_set
             train_x = b([train_x])
