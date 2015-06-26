@@ -3,7 +3,7 @@
 
 __doc__ = """{f}
 Usage:
-    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>] [--shuffle <v>] [--emb_size <v>] 
+    {f} [--alpha=<alpha>] [--n_epoch=<n_epoch>] [--width1 <v>]  [--width2 <v>] [--feat_map_n_1 <v>] [--feat_map_n_final <v>] [--dropout_rate0 <v>] [--dropout_rate1 <v>] [--dropout_rate2 <v>] [--k_top <v>] [--activation <s>] [--learn <s>] [--skip <v>] [--pretrain <s>] [--datatype <v>] [--shuffle <v>] [--emb_size <v>] [--use_regular <v>] [--regular_c <v>]
 
 Options:
     --n_epoch <n_epoch>      Number of epoch [default: 200].
@@ -23,6 +23,8 @@ Options:
     --shuffle <v>            shuffle data [default: 0].
     --datatype <v>           datatype fine-grained or binary [default: 5].
     --emb_size <v>           embedding size [default: 50].
+    --use_regular <v>        use regularizers [default: 0].
+    --regular_c <v>          use regular_c [default: 0.0].
     -h --help                Show this screen and exit.
 """.format(f=__file__)
 
@@ -50,6 +52,8 @@ s = Schema({
             '--activation': Use(str),
             '--learn': Use(str),
             '--skip': Use(int),
+            '--use_regular': Use(int),
+            '--regular_c': Use(float),
             '--shuffle': Use(int),
             '--pretrain': Use(str),
             '--emb_size': Use(int),
@@ -146,7 +150,8 @@ def main():
     activation = args.get("--activation")
     learn      = args.get("--learn")
     number_of_convolutinal_layer = 2
-
+    use_regular = bool(args.get("--use_regular"))
+    regular_c   = args.get("--regular_c")
 
     pretrain = args.get('--pretrain')
     if pretrain == 'word2vec':
@@ -351,15 +356,17 @@ def main():
     layers.append(l_final)
 
     # regularizer setting
-    regularizers_func = []
-    regularizers_func.append([regularize_l2(l=1e-4)]) # [embeddings]
-    regularizers_func.append([regularize_l2(l=3e-5), None]) # [W, b]
-    regularizers_func.append([regularize_l2(l=3e-6), None]) # [W, b]
-    regularizers_func.append([regularize_l2(l=1e-4), None]) # [logreg_W, logreg_b]
-    regularizers_func = [r_func for r in regularizers_func for r_func in r]
-
     regularizers = {}
-    regularizers['c'] = 0.0 # 2.0, 4.0, 15.0
+    regularizers['c'] = regular_c # 2.0, 4.0, 15.0
+    regularizers_func = []
+    if use_regular:
+
+        regularizers_func.append([regularize_l2(l=0.0001)]) # [embeddings]
+        regularizers_func.append([regularize_l2(l=0.00003), None]) # [W, b]
+        regularizers_func.append([regularize_l2(l=0.000003), None]) # [W, b]
+        regularizers_func.append([regularize_l2(l=0.0001), None]) # [logreg_W, logreg_b]
+        regularizers_func = [r_func for r in regularizers_func for r_func in r]
+
     regularizers['func'] = regularizers_func
 
     # if third conv layer: 1e-5
