@@ -338,15 +338,36 @@ def main():
     #     np.array([1], dtype = np.int32)
     # )
 
-
-
+    
     print "############# Learning ##############"
+
+    from sgd import sgd, rmsprop, adagrad, adadelta, adam
+    from regularizer import regularize_l2
+
     layers = []
     layers.append(embeddings)
     layers.append(l1)
     layers.append(l2)
     layers.append(l_final)
 
+    # regularizer setting
+    regularizers_func = []
+    regularizers_func.append([regularize_l2(l=1e-4)]) # [embeddings]
+    regularizers_func.append([regularize_l2(l=3e-5), None]) # [W, b]
+    regularizers_func.append([regularize_l2(l=3e-6), None]) # [W, b]
+    regularizers_func.append([regularize_l2(l=1e-4), None]) # [logreg_W, logreg_b]
+    regularizers_func = [r_func for r in regularizers_func for r_func in r]
+
+    regularizers = {}
+    regularizers['c'] = 0.0 # 2.0, 4.0, 15.0
+    regularizers['func'] = regularizers_func
+
+    # if third conv layer: 1e-5
+    
+    print embeddings.params
+    print l1.params
+    print l2.params
+    print l_final.params
     cost = l_final.nnl(y)
 
     params = [p for layer in layers for p in layer.params]
@@ -354,22 +375,14 @@ def main():
     param_grads = [T.grad(cost, param) for param in params]
 
 
-    def sgd(cost, params, lr=0.05):
-        grads = [T.grad(cost, param) for param in params]
-        updates = []
-        for p, g in zip(params, grads):
-            updates.append([p, p - g * lr])
-        return updates
-
-    from sgd import rmsprop, adagrad, adadelta, adam
 
     # updates = sgd(cost, l_final.params)
-
+    RegE = 1e-4
     # print param_grads
     if learn == "sgd":
         updates = sgd(cost, params, lr=0.05)
     elif learn == "adam":
-        updates = adam(loss_or_grads=cost, params=params, learning_rate=alpha)
+        updates = adam(loss_or_grads=cost, params=params, learning_rate=alpha, regularizers=regularizers)
     elif learn == "adagrad":
         updates = adagrad(loss_or_grads=cost, params=params, learning_rate=alpha)
     elif learn == "adadelta":

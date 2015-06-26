@@ -10,7 +10,12 @@ from collections import OrderedDict
 def floatX(X):
     return np.asarray(X, dtype=theano.config.floatX)
 
-def get_or_compute_grads(loss_or_grads, params):
+def clip_norm(g, c, n):
+    if c > 0:
+        g = T.switch(T.ge(n, c), g*c/n, g)
+    return g
+
+def get_or_compute_grads(loss_or_grads, params, regularizers={}):
     """Helper function returning a list of gradients.
 
     Parameters
@@ -19,7 +24,9 @@ def get_or_compute_grads(loss_or_grads, params):
         A scalar loss expression, or a list of gradient expressions
     params : list of shared variables
         The variables to return the gradients for
-
+    regularizers : dict 
+        'c' : clip_norm(g, c, n)
+        'func' : l2 or l1
     Returns
     -------
     list of expressions
@@ -35,10 +42,38 @@ def get_or_compute_grads(loss_or_grads, params):
                              (len(loss_or_grads), len(params)))
         return loss_or_grads
     else:
-        return theano.grad(loss_or_grads, params)
+        c = regularizers.get('c', 0.0)
+        regularizers_funcs = regularizers.get('func', [])
+        if len(regularizers_funcs) == 0 and c == 0.0:
+            return theano.grad(loss_or_grads, params)
+        else:
+
+            grads = theano.grad(loss_or_grads, params)
+            # Max-Norm
+            if c > 0:
+                norm = T.sqrt(sum([T.sum(g**2) for g in grads]))
+                grads = [clip_norm(g, c, norm) for g in grads]
+
+            new_grads = []
+            for p, g, r in zip(params, grads, regularizers_funcs):
+                if r is None:
+                    new_grads.append(g)
+                else:
+                    # L1 or L2 func
+                    new_grads.append(r(g, p))
+
+            return new_grads
 
 
-def rmsprop(loss_or_grads, params, learning_rate=1.0, rho=0.9, epsilon=1e-6):
+
+def sgd(cost, params, lr=0.05):
+    grads = [T.grad(cost, param) for param in params]
+    updates = []
+    for p, g in zip(params, grads):
+        updates.append([p, p - g * lr])
+    return updates
+
+def rmsprop(loss_or_grads, params, learning_rate=1.0, rho=0.9, epsilon=1e-6, regularizers=None):
     """RMSProp updates [1]_.
 
     Scale learning rates by dividing with the moving average of the root mean
@@ -81,7 +116,7 @@ def rmsprop(loss_or_grads, params, learning_rate=1.0, rho=0.9, epsilon=1e-6):
            Neural Networks for Machine Learning, Lecture 6.5 - rmsprop.
            Coursera. http://www.youtube.com/watch?v=O3sxAc4hxZU (formula @5:20)
     """
-    grads = get_or_compute_grads(loss_or_grads, params)
+    grads = get_or_compute_grads(loss_or_grads, params, regularizers)
     updates = OrderedDict()
 
     for param, grad in zip(params, grads):
@@ -96,7 +131,7 @@ def rmsprop(loss_or_grads, params, learning_rate=1.0, rho=0.9, epsilon=1e-6):
     return updates
 
 
-def adagrad(loss_or_grads, params, learning_rate=1.0, epsilon=1e-6):
+def adagrad(loss_or_grads, params, learning_rate=1.0, epsilon=1e-6, regularizers=None):
     """Adagrad updates [1]_.
 
     Scale learning rates by dividing with the square root of accumulated
@@ -140,7 +175,7 @@ def adagrad(loss_or_grads, params, learning_rate=1.0, epsilon=1e-6):
            Notes on AdaGrad. http://www.ark.cs.cmu.edu/cdyer/adagrad.pdf
     """
 
-    grads = get_or_compute_grads(loss_or_grads, params)
+    grads = get_or_compute_grads(loss_or_grads, params, regularizers)
     updates = OrderedDict()
 
     for param, grad in zip(params, grads):
@@ -155,7 +190,7 @@ def adagrad(loss_or_grads, params, learning_rate=1.0, epsilon=1e-6):
     return updates
 
 
-def adadelta(loss_or_grads, params, learning_rate=1.0, rho=0.95, epsilon=1e-6):
+def adadelta(loss_or_grads, params, learning_rate=1.0, rho=0.95, epsilon=1e-6, regularizers=None):
     """ Adadelta updates [1]_.
 
     Scale learning rates by a the ratio of accumulated gradients to accumulated
@@ -208,7 +243,7 @@ def adadelta(loss_or_grads, params, learning_rate=1.0, rho=0.95, epsilon=1e-6):
            ADADELTA: An Adaptive Learning Rate Method.
            arXiv Preprint arXiv:1212.5701.
     """
-    grads = get_or_compute_grads(loss_or_grads, params)
+    grads = get_or_compute_grads(loss_or_grads, params, regularizers)
     updates = OrderedDict()
 
     for param, grad in zip(params, grads):
@@ -237,7 +272,7 @@ def adadelta(loss_or_grads, params, learning_rate=1.0, rho=0.95, epsilon=1e-6):
 
 
 def adam(loss_or_grads, params, learning_rate=0.001, beta1=0.9,
-         beta2=0.999, epsilon=1e-8):
+         beta2=0.999, epsilon=1e-8, regularizers=None):
     """Adam updates [1]_.
 
     Parameters
@@ -272,7 +307,7 @@ def adam(loss_or_grads, params, learning_rate=0.001, beta1=0.9,
            Adam: A Method for Stochastic Optimization.
            arXiv preprint arXiv:1412.6980.
     """
-    all_grads = get_or_compute_grads(loss_or_grads, params)
+    all_grads = get_or_compute_grads(loss_or_grads, params, regularizers)
     t_prev = theano.shared(floatX(0.))
     updates = []
     for param, g_t in zip(params, all_grads):
