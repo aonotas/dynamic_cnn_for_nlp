@@ -384,18 +384,18 @@ def main():
 
 
     # updates = sgd(cost, l_final.params)
-    RegE = 1e-4
+    # RegE = 1e-4
     # print param_grads
     if learn == "sgd":
         updates = sgd(cost, params, lr=0.05)
     elif learn == "adam":
         updates = adam(loss_or_grads=cost, params=params, learning_rate=alpha, regularizers=regularizers)
     elif learn == "adagrad":
-        updates = adagrad(loss_or_grads=cost, params=params, learning_rate=alpha)
+        updates = adagrad(loss_or_grads=cost, params=params, learning_rate=alpha, regularizers=regularizers)
     elif learn == "adadelta":
-        updates = adadelta(loss_or_grads=cost, params=params)
+        updates = adadelta(loss_or_grads=cost, params=params, regularizers=regularizers)
     elif learn == "rmsprop":
-        updates = rmsprop(loss_or_grads=cost, params=params, learning_rate=alpha)
+        updates = rmsprop(loss_or_grads=cost, params=params, learning_rate=alpha, regularizers=regularizers)
 
 
     train = theano.function(inputs=[x, length_x, y], outputs=cost, updates=updates, allow_input_downcast=True)
