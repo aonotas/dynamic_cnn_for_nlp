@@ -355,19 +355,24 @@ def main():
     layers.append(l2)
     layers.append(l_final)
 
+
+    cost = l_final.nnl(y)
+    params = [p for layer in layers for p in layer.params]
+    param_shapes = [l.param_shapes for l in layers]
+    param_grads = [T.grad(cost, param) for param in params]
+
     # regularizer setting
     regularizers = {}
     regularizers['c'] = regular_c # 2.0, 4.0, 15.0
-    regularizers_func = []
+    regularizers['func'] = [None for _ in range(len(params))]
     if use_regular:
-
+        regularizers_func = []
         regularizers_func.append([regularize_l2(l=0.0001)]) # [embeddings]
         regularizers_func.append([regularize_l2(l=0.00003), None]) # [W, b]
         regularizers_func.append([regularize_l2(l=0.000003), None]) # [W, b]
         regularizers_func.append([regularize_l2(l=0.0001), None]) # [logreg_W, logreg_b]
         regularizers_func = [r_func for r in regularizers_func for r_func in r]
-
-    regularizers['func'] = regularizers_func
+        regularizers['func'] = regularizers_func
 
     # if third conv layer: 1e-5
     
@@ -375,11 +380,7 @@ def main():
     print l1.params
     print l2.params
     print l_final.params
-    cost = l_final.nnl(y)
 
-    params = [p for layer in layers for p in layer.params]
-    param_shapes = [l.param_shapes for l in layers]
-    param_grads = [T.grad(cost, param) for param in params]
 
 
 
