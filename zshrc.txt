@@ -1,0 +1,61 @@
+source ~/.zsh.d/zshrc
+
+[ -f ~/.zshrc.mine ] && source ~/.zshrc.mine                                
+export NEO4J_HOME="/opt/neo4j"
+#export PATH="$HOME/.rbenv/bin:$PATH:$NEO4J_HOME/bin"
+
+#eval "$(rbenv init -)"
+
+alias be='bundle exec'
+alias ls='ls --color=auto'
+alias ll='ls -l'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+export PATH=$PATH:~/bin
+# for caffe
+#export PATH=$PATH:/usr/local/cuda-6.5/bin
+#export LD_LIBRARY_PATH=/usr/local/cuda-6.5/lib64
+
+
+# for caffe python
+#export PYTHONPATH=~/deep/caffe/python/:$PYTHONPATH
+
+# for GPU
+#export PATH includes="/usr/local/cuda-6.0/bin"
+#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda-6.0/lib64"
+
+
+# for GPU theano
+#THEANO_FLAGS='floatX=float32,device=gpu0,nvcc.fastmath=True'
+
+
+# for GPU theano add
+#export PATH=/usr/local/cuda-6.5/bin:$PATH
+#export DYLD_LIBRARY_PATH=/usr/local/cuda-6.5/lib64:$DYLD_LIBRARY_PATH 
+#export CUDA_ROOT=/usr/local/cuda-6.5/
+
+# zsh
+# zsh
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt hist_ignore_dups     # ignore duplication command history list
+setopt share_history        # share command history data
+autoload history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey '^P' history-beginning-search-backward
+bindkey "^P" history-beginning-search-backward-end
+bindkey "^N" history-beginning-search-forward-end
+
+# color
+autoload colors
+colors
+PROMPT="%{$fg[green]%}%m%(!.#.$) %{$reset_color%}"
+PROMPT2="%{$fg[green]%}%_> %{$reset_color%}"
+SPROMPT="%{$fg[red]%}correct: %R -> %r [nyae]? %{$reset_color%}"
+RPROMPT="%{$fg[cyan]%}[%~]%{$reset_color%}"
+

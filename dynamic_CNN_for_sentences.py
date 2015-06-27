@@ -71,6 +71,7 @@ import theano
 import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 theano.config.exception_verbosity='high'
+theano.optimizer='fast_compile'
 
 from dcnn_train import WordEmbeddingLayer,DynamicConvFoldingPoolLayer #, ConvFoldingPoolLayer
 from logreg import LogisticRegression
